@@ -6,5 +6,5 @@
 #SBATCH --output=/home/%u/ceg7370/matmul/%x-%u-%j.out    #Send output to ~/
 
 echo "STARTING JOB"
-srun singularity exec --nv /home/containers/cupy.sif python -u ${CEG7370_HOME}/WSU-CEG7370-GroupQ/cupy/matmul.py
+srun singularity exec --nv /home/containers/cupy.sif python -u ./matmul.py
 echo "JOB FINISHED"
