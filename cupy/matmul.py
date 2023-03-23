@@ -3,7 +3,6 @@ os.environ["CUPY_ACCELERATORS"] = 'cub'
 
 import numpy as np
 import cupy as cp
-import cv2
 from timeit import timeit
 
 n=512
