@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import time
+from timeit import timeit
 
 # Define the matrix dimensions
 #matrix_size = 512
