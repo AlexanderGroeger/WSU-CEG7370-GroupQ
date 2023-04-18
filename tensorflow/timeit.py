@@ -1,7 +1,7 @@
 import numpy as np
 from time import time
 
-def timeit(f, runs=20, timeout=120):
+def timeit(f, runs=100, timeout=120):
     
     times = []
     total_time = 0
