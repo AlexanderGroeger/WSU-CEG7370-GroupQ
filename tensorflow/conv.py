@@ -21,24 +21,27 @@ gpu_device = '/device:GPU:0'
 
 # Define the TensorFlow function
 @tf.function
-def convolution(matrix, kernel):
+def convolution():
+#def convolution(matrix, kernel):
     # Apply the convolution using conv2d
     result = tf.nn.conv2d(matrix, kernel, strides=[1, 1, 1, 1], padding='SAME')
     return result
 
 # Run the computation on the CPU and measure the time taken
 with tf.device(cpu_device):
-    start_time = time.time()
+    '''start_time = time.time()
     result_cpu = convolution(matrix, kernel)
-    time_cpu = time.time() - start_time
-    print("CPU time:", time_cpu)
+    time_cpu = time.time() - start_time'''
+    cpu_time = timeit(convolution)
+    print("CPU time:", cpu_time)
 
 # Run the computation on the GPU and measure the time taken
 with tf.device(gpu_device):
-    start_time = time.time()
+    '''start_time = time.time()
     result_gpu = convolution(matrix, kernel)
-    time_gpu = time.time() - start_time
-    print("GPU time:", time_gpu)
+    time_gpu = time.time() - start_time'''
+    cpu_time = timeit(convolution)
+    print("GPU time:", gpu_time)
 
 # Compute the speedup achieved by running the computation on the GPU
 speedup = time_cpu / time_gpu
