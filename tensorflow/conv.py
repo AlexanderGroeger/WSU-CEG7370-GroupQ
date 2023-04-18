@@ -15,10 +15,6 @@ matrix = tf.random.normal(shape=(1, matrix_size, matrix_size, num_channels), dty
 # Create a random kernel
 kernel = tf.random.normal(shape=(kernel_size, kernel_size, num_channels, num_channels), dtype=tf.float32)
 
-# Define the CPU and GPU devices
-cpu_device = '/device:CPU:0'
-gpu_device = '/device:GPU:0'
-
 # Define the TensorFlow function
 @tf.function
 def convolution():
@@ -28,18 +24,12 @@ def convolution():
     return result
 
 # Run the computation on the CPU and measure the time taken
-with tf.device(cpu_device):
-    '''start_time = time.time()
-    result_cpu = convolution(matrix, kernel)
-    time_cpu = time.time() - start_time'''
+with tf.device('/device:CPU:0'):
     cpu_time = timeit(convolution)
     print("CPU time:", cpu_time)
 
 # Run the computation on the GPU and measure the time taken
-with tf.device(gpu_device):
-    '''start_time = time.time()
-    result_gpu = convolution(matrix, kernel)
-    time_gpu = time.time() - start_time'''
+with tf.device('/device:GPU:0'):
     cpu_time = timeit(convolution)
     print("GPU time:", gpu_time)
 
