@@ -4,36 +4,22 @@ os.environ["CUPY_ACCELERATORS"] = 'cub'
 import numpy as np
 import cupy as cp
 from timeit import timeit
+from runit import runit
 
-n = 1024
-print(f"size: {n}x{n}")
+def dataFunction(size):
 
-a = np.random.uniform(0,1,size=(n,n))
-ga = cp.array(a)
+    a = np.random.uniform(0,1,size=(size,size))
+    ga = cp.array(a)
 
-ta = timeit("small_numpy",lambda: np.linalg.inv(a),30)
-print(f"cpu time: {ta:.4e}")
-tb = timeit("small_cupy",lambda: cp.linalg.inv(ga),20,True)
-print(f"gpu time: {tb:.4e}")
-print(f"operation speedup: {ta/tb:.2f}")
-tc = timeit("small_cupy_memory",lambda: cp.linalg.inv(cp.array(a)).get(),60,True)
-print(f"gpu+mem time: {tc:.4e}")
-print(f"total speedup: {ta/tc:.2f}")
+    return a, ga
 
-del a
-del ga
+def cpuFunction(data):
+    return np.linalg.inv(data)
 
-N = 8192
-print(f"size: {N}x{N}")
+def gpuFunction(data):
+    return cp.linalg.inv(data)
 
-A = np.random.uniform(0,1,size=(N,N))
-gA = cp.array(A)
+def gpuMemFunction(data):
+    return cp.linalg.inv(cp.array(data)).get()
 
-tA = timeit("big_numpy",lambda: np.linalg.inv(A),30)
-print(f"cpu time: {tA:.4e}")
-tB = timeit("big_cupy",lambda: cp.linalg.inv(gA),20,True)
-print(f"gpu time: {tB:.4e}")
-print(f"operation speedup: {tA/tB:.2f}")
-tC = timeit("big_cupy_memory",lambda: cp.linalg.inv(cp.array(A)).get(),60,True)
-print(f"gpu+mem time: {tC:.4e}")
-print(f"total speedup: {tA/tC:.2f}")
+runit(dataFunction, cpuFunction, gpuFunction, gpuMemFunction, runs=20)
