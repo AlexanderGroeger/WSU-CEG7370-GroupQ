@@ -6,6 +6,9 @@
 # Emacs editing
 *.*~
 
+# Slurm outputs
+*.out
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -117,6 +120,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+tensorflow_env/
 
 # Spyder project settings
 .spyderproject
