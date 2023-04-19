@@ -6,39 +6,24 @@ import cupy as cp
 from cupyx.scipy.ndimage import rotate
 import cv2
 from timeit import timeit
+from runit import runit
 
 angle=45
 
-n=512
-print(f"Size: {n}x{n}")
+def dataFunction(size):
 
-a = np.random.uniform(0,1,size=(n,n,3))
-ga = cp.array(a)
+    a = np.random.uniform(0,1,size=(size,size,3))
+    ga = cp.array(a)
+    
+    return a, ga
 
-ta = timeit("small_opencv",lambda: cv2.warpAffine(a,cv2.getRotationMatrix2D((n//2,n//2),angle,1),dsize=(n,n)),timeout=20)
-print(f"cpu time: {ta:.4e}")
-tb = timeit("small_cupy",lambda: rotate(ga,angle,reshape=False,mode='opencv'),timeout=10,gsync=True)
-print(f"gpu time: {tb:.4e}")
-print(f"operation speedup: {ta/tb:.2f}")
-tc = timeit("small_cupy_memory",lambda: rotate(cp.array(a),angle,reshape=False,mode='opencv').get(),timeout=10,gsync=True)
-print(f"gpu+mem time: {tc:.4e}")
-print(f"total speedup: {ta/tc:.2f}")
+def cpuFunction(data):
+    return cv2.warpAffine(data,cv2.getRotationMatrix2D((size//2,size//2),angle,1),dsize=(size,size))
 
-del ga
-del a
+def gpuFunction(data):
+    return rotate(data,angle,reshape=False,mode='opencv')
 
+def gpuMemFunction(data):
+    return rotate(cp.array(data),angle,reshape=False,mode='opencv').get()
 
-N=2048
-print(f"Size: {N}x{N}")
-
-A = np.random.uniform(0,1,size=(N,N,3))
-gA = cp.array(A)
-
-tA = timeit("big_opencv",lambda: cv2.warpAffine(A,cv2.getRotationMatrix2D((N//2,N//2),angle,1),dsize=(N,N)),timeout=20)
-print(f"cpu time: {tA:.4e}")
-tB = timeit("big_cupy",lambda: rotate(gA,angle,reshape=False,mode='opencv'),timeout=10,gsync=True)
-print(f"gpu time: {tB:.4e}")
-print(f"operation speedup: {tA/tB:.2f}")
-tC = timeit("big_cupy_memory",lambda: rotate(cp.array(A),angle,reshape=False,mode='opencv').get(),timeout=10,gsync=True)
-print(f"gpu+mem time: {tC:.4e}")
-print(f"total speedup: {tA/tC:.2f}")
+runit(dataFunction, cpuFunction, gpuFunction, gpuMemFunction)
