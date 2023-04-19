@@ -16,18 +16,18 @@ def dataFunction(size):
     ga = cp.array(a)
     gk = cp.array(k)
 
-    return (a,c), (ga,gc)
+    return (a,k), (ga,gk)
 
 def cpuFunction(data):
     a, k = data
     return cv2.filter2D(a, ddepth=-1, kernel=k)
 
 def gpuFunction(data):
-    ga, gc = data
+    ga, gk = data
     return convolve2d(ga,gk)
 
 def gpuMemFunction(data):
-    a, c = data
+    a, k = data
     return convolve2d(cp.array(a),cp.array(k)).get()
 
 runit(dataFunction, cpuFunction, gpuFunction, gpuMemFunction)
