@@ -29,4 +29,38 @@ def gpuMemFunction(data):
     a, c = data
     return cp.dot(cp.array(a),cp.array(c)).get()
 
-runit(dataFunction, cpuFunction, gpuFunction, gpuMemFunction)
+if __name__=="__main__":
+
+    import sys
+    import os
+
+    process_image = False
+    try:
+        filepath = sys.argv[1]
+        process_image = True
+    except:
+        pass
+
+    if process_image:
+
+        folder, filename = os.path.split(filepath)
+        operation_name = os.path.basename(__file__).rstrip('.py')
+
+        img = cv2.cvtColor(cv2.imread(filepath),cv2.COLOR_BGR2RGB)
+        gimg = cp.array(img.astype(np.float32)/255)
+        
+        c = np.array([0.299,0.587,0.114],dtype=np.float32)
+        gc = cp.array(c)
+
+        cout = cpuFunction((img,c))
+        gout = (255*gpuFunction((gimg,gc))).astype(np.uint8).get()
+
+        cfile = f"{folder}/{operation_name}_opencv_{filename}"
+        gfile = f"{folder}/{operation_name}_cupy_{filename}"
+        
+        cv2.imwrite(cfile, cout)
+        cv2.imwrite(gfile, gout)
+
+    else:
+        runit(dataFunction, cpuFunction, gpuFunction, gpuMemFunction)
+    
