@@ -5,4 +5,6 @@
 #SBATCH --gres=gpu:1                #for requesting a GPU (p100 has x8 in one node, a100 only has 1gpu)
 #SBATCH --output=/home/%u/ceg7370/rot/%x-%u-%j.out    #Send output to ~/
 
-srun singularity exec --nv /home/containers/tf.sif python ./rotate.py
+srun singularity exec --nv /home/containers/tf.sif python ./rotate.py 512
+srun singularity exec --nv /home/containers/tf.sif python ./rotate.py 2048
+srun singularity exec --nv /home/containers/tf.sif python ./rotate.py 8192
