@@ -1,22 +1,45 @@
 import tensorflow as tf
+import numpy as np
 import time
 from timeit import timeit
+from PIL import Image
+import sys
 
-# Generate a random 512x512 RGB image
-#img = tf.random.normal((512, 512, 3))
-img = tf.random.normal((2048, 2048, 3))
+if len(sys.argv) > 1:
+     n = sys.argv[1]
+     random_data = tf.random.normal((512, 512, 3))
+     input_data = tf.convert_to_tensor(random_data)
+     print("Size = ", n, "x", n)
 
-def rgb2gray():
-    gray = tf.reduce_sum(img * tf.constant([0.2989, 0.5870, 0.1140]), axis=-1, keepdims=True)
+else:
+    input_image = Image.open("s-l1600.jpg") 
+    input_data = tf.convert_to_tensor(np.array(input_image))
+
+def rgb2gray(input_data):
+    input_data = tf.image.rgb_to_grayscale(input_data)
+    input_data = tf.squeeze(input_data, axis=-1)
+    input_data = tf.cast(input_data, dtype=tf.uint8)
+    gray = input_data.numpy()
     return gray
-    
-with tf.device('/CPU:0'):
-    cpu_time = timeit(rgb2gray)
-    
-with tf.device('/GPU:0'):
-    gpu_time = timeit(rgb2gray)
+
+def run_on_cpu():
+    with tf.device('/CPU:0'):
+        output_tensor = rgb2gray(input_data)
+        if(len(sys.argv) < 2):
+            output_image = Image.fromarray(output_tensor, "L")
+            output_image.save("gray_cpu.jpg")
+
+def run_on_gpu():
+    with tf.device('/GPU:0'):
+        output_tensor = rgb2gray(input_data)
+        if(len(sys.argv) < 2):
+            output_image = Image.fromarray(output_tensor, "L")
+            output_image.save("gray_gpu.jpg")
 
 
+cpu_time = timeit(run_on_cpu)
+gpu_time = timeit(run_on_gpu)
+ 
 # Print the CPU and GPU time
 print("CPU time: ", cpu_time, " seconds")
 print("GPU time: ", gpu_time," seconds")
