@@ -6,5 +6,5 @@
 #SBATCH --output=/home/%u/ceg7370/grayscale/%x-%u-%j.out    #Send output to ~/
 
 echo "STARTING JOB"
-srun singularity exec --nv /home/containers/cupy.sif python -u ./grayscale.py
+srun singularity exec --nv /home/containers/cupy.sif python -u ./grayscale.py $1
 echo "JOB FINISHED"
