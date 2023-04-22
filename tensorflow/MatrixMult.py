@@ -1,42 +1,44 @@
 import tensorflow as tf
-import time
+from timeit import timeit
 
-# create two large matrices
-matrix1 = tf.random.normal([1000, 1000])
-matrix2 = tf.random.normal([1000, 1000])
+def cpu_multiply(matrix1, matrix2):
+    return tf.matmul(matrix1, matrix2)
 
-# copy matrices to CPU memory
-start_time = time.time()
-with tf.device('/CPU:0'):
-    matrix1_cpu = tf.identity(matrix1)
-    matrix2_cpu = tf.identity(matrix2)
-end_time = time.time()
-cpu_copy_time = end_time - start_time
+def gpu_multiply(matrix1, matrix2):
+    return tf.matmul(matrix1, matrix2)
 
-# copy matrices to GPU memory
-start_time = time.time()
-with tf.device('/GPU:0'):
-    matrix1_gpu = tf.identity(matrix1)
-    matrix2_gpu = tf.identity(matrix2)
-end_time = time.time()
-gpu_copy_time = end_time - start_time
+sizes = [512, 2048, 8192]
 
-# perform matrix multiplication on CPU
-start_time = time.time()
-with tf.device('/CPU:0'):
-    result_cpu = tf.matmul(matrix1_cpu, matrix2_cpu)
-end_time = time.time()
-cpu_time = end_time - start_time
+for size in sizes:
+    print(f"Size: {size}x{size}")
 
-# perform matrix multiplication on GPU
-start_time = time.time()
-with tf.device('/GPU:0'):
-    result_gpu = tf.matmul(matrix1_gpu, matrix2_gpu)
-end_time = time.time()
-gpu_time = end_time - start_time
+    # create two large matrices
+    matrix1 = tf.random.normal([size, size])
+    matrix2 = tf.random.normal([size, size])
 
-print("CPU copy time:", cpu_copy_time)
-print("GPU copy time:", gpu_copy_time)
-print("CPU time:", cpu_time)
-print("GPU time:", gpu_time)
-print("Speedup:", cpu_time / gpu_time)
+    # copy matrices to CPU memory
+    cpu_copy_time = timeit(lambda: tf.identity(matrix1), number=1)
+    cpu_copy_time += timeit(lambda: tf.identity(matrix2), number=1)
+
+    # copy matrices to GPU memory
+    gpu_copy_time = timeit(lambda: tf.identity(matrix1).numpy(), number=1)
+    gpu_copy_time += timeit(lambda: tf.identity(matrix2).numpy(), number=1)
+
+    # perform matrix multiplication on CPU
+    cpu_time = timeit(lambda: cpu_multiply(matrix1, matrix2), number=1)
+
+    # perform matrix multiplication on GPU
+    gpu_time = timeit(lambda: timeit(lambda: gpu_multiply(matrix1, matrix2), number=1), number=1)
+
+    operation_speedup = cpu_time / gpu_time
+    gpu_memory_usage = tf.config.experimental.get_memory_usage('GPU:0') / 1024 / 1024 / 1024
+    gpu_memory_usage = abs(gpu_memory_usage) # memory usage can be negative in some cases
+    gpu_mem_speedup = (cpu_time + cpu_copy_time) / (gpu_time + gpu_copy_time + gpu_memory_usage)
+    
+    print(f'CPU copy time: {cpu_copy_time:.3e}')
+    print(f'GPU copy time: {gpu_copy_time:.3e}')
+    print(f'CPU time: {cpu_time:.3e}')
+    print(f'GPU time: {gpu_time:.3e}')
+    print(f'Operation speedup: {operation_speedup:.2f}')
+    print(f'GPU memory usage: {gpu_memory_usage:.3f} GB')
+    print(f'GPU memory speedup: {gpu_mem_speedup:.2f}')
