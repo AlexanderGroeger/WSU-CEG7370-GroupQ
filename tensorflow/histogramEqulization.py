@@ -6,7 +6,7 @@ import numpy as np
 
 if len(sys.argv) > 1:
      n = sys.argv[1]
-     random_data = tf.random.uniform(shape=(512, 512), minval=0.0, maxval=1.0)
+     random_data = tf.random.uniform(shape=(int(n), int(n)), minval=0.0, maxval=1.0)
      image = tf.image.convert_image_dtype(random_data, tf.float32)
      split_dim_size = random_data.shape[-1]
      split_size = split_dim_size // 3
