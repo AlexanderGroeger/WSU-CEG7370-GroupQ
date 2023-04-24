@@ -7,6 +7,4 @@
 
 #srun singularity exec --nv /home/containers/tf.sif python ./matinv.py
 
-srun singularity exec --nv /home/containers/tf.sif python ./matinv.py 512
-srun singularity exec --nv /home/containers/tf.sif python ./matinv.py 2048
-srun singularity exec --nv /home/containers/tf.sif python ./matinv.py 8192
+srun singularity exec --nv /home/containers/tf2.sif python ./matinv.py 
