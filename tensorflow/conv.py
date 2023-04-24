@@ -9,20 +9,16 @@ n = int(sys.argv[1])
 print("Size: ",n,"X",n)
 input_data = tf.random.normal([1, n, n, 1])
 
-conv_layer = tf.keras.layers.Conv2D(filters=16, kernel_size=(3, 3), activation='relu')
+kernel = tf.constant(tf.ones(shape=[1, 5, 5, 1]), dtype=tf.float32)
 
 # Test CPU execution time
-def run_on_cpu():
-    with tf.device('/CPU:0'):
-        output_data_cpu = conv_layer(input_data)
+with tf.device('/CPU:0'):
+    cpu_time = timeit(lambda: tf.nn.conv2d(input_data, kernel, strides=[1, 1, 1, 1], padding="VALID"))
 
 # Test GPU execution time
-def run_on_gpu():
-    with tf.device('/GPU:0'):
-        output_data_gpu = conv_layer(input_data)
+with tf.device('/GPU:0'):
+    gpu_time = timeit(lambda: tf.nn.conv2d(input_data, kernel, strides=[1, 1, 1, 1], padding="VALID"))
 
-cpu_time = timeit(run_on_cpu)
-gpu_time = timeit(run_on_gpu)
 print("CPU Time", cpu_time)
 print("GPU Time", gpu_time)
 print("Speed Up :", cpu_time/gpu_time)
