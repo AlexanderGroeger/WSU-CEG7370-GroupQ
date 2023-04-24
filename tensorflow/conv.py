@@ -1,38 +1,28 @@
 import tensorflow as tf
-import numpy as np
 import time
 from timeit import timeit
+import sys
+import numpy as np
 
-# Define the matrix dimensions
-#matrix_size = 512
-matrix_size = 4096
-kernel_size = 3
-num_channels = 1
+# Generate random input data
+n = int(sys.argv[1])
+print("Size: ",n,"X",n)
+input_data = tf.random.normal([1, n, n, 1])
 
-# Create a random matrix
-matrix = tf.random.normal(shape=(1, matrix_size, matrix_size, num_channels), dtype=tf.float32)
+conv_layer = tf.keras.layers.Conv2D(filters=16, kernel_size=(3, 3), activation='relu')
 
-# Create a random kernel
-kernel = tf.random.normal(shape=(kernel_size, kernel_size, num_channels, num_channels), dtype=tf.float32)
+# Test CPU execution time
+def run_on_cpu():
+    with tf.device('/CPU:0'):
+        output_data_cpu = conv_layer(input_data)
 
-# Define the TensorFlow function
-@tf.function
-def convolution():
-#def convolution(matrix, kernel):
-    # Apply the convolution using conv2d
-    result = tf.nn.conv2d(matrix, kernel, strides=[1, 1, 1, 1], padding='SAME')
-    return result
+# Test GPU execution time
+def run_on_gpu():
+    with tf.device('/GPU:0'):
+        output_data_gpu = conv_layer(input_data)
 
-# Run the computation on the CPU and measure the time taken
-with tf.device('/device:CPU:0'):
-    cpu_time = timeit(convolution)
-    print("CPU time:", cpu_time)
-
-# Run the computation on the GPU and measure the time taken
-with tf.device('/device:GPU:0'):
-    cpu_time = timeit(convolution)
-    print("GPU time:", gpu_time)
-
-# Compute the speedup achieved by running the computation on the GPU
-speedup = time_cpu / time_gpu
-print("Speedup:", speedup)
+cpu_time = timeit(run_on_cpu)
+gpu_time = timeit(run_on_gpu)
+print("CPU Time", cpu_time)
+print("GPU Time", gpu_time)
+print("Speed Up :", cpu_time/gpu_time)
