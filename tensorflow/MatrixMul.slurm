@@ -6,6 +6,4 @@
 #SBATCH --output=/home/%u/ceg7370/MatrixMul/%x-%u-%j.out    #Send output to ~/
 
 
-srun singularity exec --nv /home/containers/tf2.sif python ./MatrixMul.py 512
-srun singularity exec --nv /home/containers/tf2.sif python ./MatrixMul.py 2048
-srun singularity exec --nv /home/containers/tf2.sif python ./Matrixmul.py 8192
+srun singularity exec --nv /home/containers/tf2.sif python ./MatrixMul.py 
