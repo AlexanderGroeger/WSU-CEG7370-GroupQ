@@ -1,5 +1,6 @@
 import numpy as np
 from time import perf_counter
+from tensorflow import timestamp
 
 def timeit(f, runs=100, timeout=120):
     
@@ -11,11 +12,11 @@ def timeit(f, runs=100, timeout=120):
         if total_time >= timeout:
             break
         
-        s = perf_counter()
+        s = timestamp()
         
         f()
 
-        dt = perf_counter() - s
+        dt = timestamp() - s
         times.append(dt)
         total_time += dt
 
