@@ -1,20 +1,8 @@
 import tensorflow as tf
 import time
 from timeit import timeit
-import sys
 import numpy as np
 
-if len(sys.argv) > 1:
-     n = sys.argv[1]
-     random_data = tf.random.uniform(shape=(int(n), int(n)), minval=0.0, maxval=1.0)
-     image = tf.image.convert_image_dtype(random_data, tf.float32)
-     split_dim_size = random_data.shape[-1]
-     split_size = split_dim_size // 3
-     remainder = split_dim_size % 3
-     split_sizes = [split_size] * 3
-     split_sizes[0] += remainder
-     r, g, b = tf.split(random_data, num_or_size_splits=split_sizes, axis=-1)
-     print("Size = ", n, "x", n)
 
 def histogram_equalization_channel(channel):
     hist = tf.histogram_fixed_width(channel, value_range=(0.0, 1.0), nbins=256)
@@ -33,26 +21,41 @@ def histogram_equalization(r,g,b):
         return image_equalized
 
 #Histogram Equalization on Actual Image
-if (len(sys.argv)<2):
-    image_path = 'image.jpg'
-    image = tf.io.read_file(image_path)
-    image = tf.image.decode_jpeg(image, channels=3)
-    image = tf.image.convert_image_dtype(image, tf.float32)
-    r, g, b = tf.split(image, 3, axis=-1)
-    image_equalized = histogram_equalization(r,g,b)
-    tf.io.write_file('histEq.jpg', tf.image.encode_jpeg(image_equalized))
-    exit(0)
+image_path = 'image.jpg'
+image = tf.io.read_file(image_path)
+image = tf.image.decode_jpeg(image, channels=3)
+image = tf.image.convert_image_dtype(image, tf.float32)
+r, g, b = tf.split(image, 3, axis=-1)
+#calling histogram equalization
+image_equalized = histogram_equalization(r,g,b)
+tf.io.write_file('histEq.jpg', tf.image.encode_jpeg(image_equalized))
 
 
-with tf.device('/CPU:0'):
-    cpu_time = timeit(lambda: histogram_equalization(r,g,b))
 
+#Running for different sizes
+n=512
 
-with tf.device('/GPU:0'):
-    gpu_time = timeit(lambda: histogram_equalization(r,g,b))
+for i in range(1, 4):
 
+     random_data = tf.random.uniform(shape=(n,n), minval=0.0, maxval=1.0)
+     image = tf.image.convert_image_dtype(random_data, tf.float32)
+     split_dim_size = random_data.shape[-1]
+     split_size = split_dim_size // 3
+     remainder = split_dim_size % 3
+     split_sizes = [split_size] * 3
+     split_sizes[0] += remainder
+     r, g, b = tf.split(random_data, num_or_size_splits=split_sizes, axis=-1)
+     print("Size = ", n, "x", n)
 
-print("CPU time: ", cpu_time, " seconds")
-print("GPU time: ", gpu_time," seconds")
-speedup = cpu_time / gpu_time
-print("Speedup: ", speedup)
+     n = n*4
+
+     with tf.device('/CPU:0'):
+        cpu_time = timeit(lambda: histogram_equalization(r,g,b))
+
+     with tf.device('/GPU:0'):
+        gpu_time = timeit(lambda: histogram_equalization(r,g,b))
+
+     print("CPU time: ", cpu_time, " seconds")
+     print("GPU time: ", gpu_time," seconds")
+     speedup = cpu_time / gpu_time
+     print("Speedup: ", speedup)
