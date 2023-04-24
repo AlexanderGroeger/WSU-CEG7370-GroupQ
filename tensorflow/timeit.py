@@ -1,5 +1,5 @@
 import numpy as np
-from time import time
+from time import perf_counter
 
 def timeit(f, runs=100, timeout=120):
     
@@ -11,11 +11,11 @@ def timeit(f, runs=100, timeout=120):
         if total_time >= timeout:
             break
         
-        s = time()
+        s = perf_counter()
         
         f()
 
-        dt = time() - s
+        dt = perf_counter() - s
         times.append(dt)
         total_time += dt
 
