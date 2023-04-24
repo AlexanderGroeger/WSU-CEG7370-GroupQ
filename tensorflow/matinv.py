@@ -11,7 +11,7 @@ else:
     printf("Please pass valid paraeter with the script")
     exit(0)
 
-def matrixInverse(matri):
+def matrixInverse(matrix):
     return tf.linalg.inv(matrix)
 
 with tf.device('/CPU:0'):
