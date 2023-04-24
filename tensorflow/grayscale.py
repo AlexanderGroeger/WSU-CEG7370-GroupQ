@@ -3,17 +3,6 @@ import numpy as np
 import time
 from timeit import timeit
 from PIL import Image
-import sys
-
-if len(sys.argv) > 1:
-     n = sys.argv[1]
-     random_data = tf.random.normal((512, 512, 3))
-     input_data = tf.convert_to_tensor(random_data)
-     print("Size = ", n, "x", n)
-
-else:
-    input_image = Image.open("s-l1600.jpg") 
-    input_data = tf.convert_to_tensor(np.array(input_image))
 
 def rgb2gray(input_data):
     input_data = tf.image.rgb_to_grayscale(input_data)
@@ -22,28 +11,34 @@ def rgb2gray(input_data):
     gray = input_data.numpy()
     return gray
 
-def run_on_cpu():
+#On Actual Image
+input_image = Image.open("s-l1600.jpg")
+input_data = tf.convert_to_tensor(np.array(input_image))
+output_tensor = rgb2gray(input_data)
+output_image = Image.fromarray(output_tensor, "L")
+output_image.save("gray_cpu.jpg")
+
+
+#Different Sizes
+n=512
+
+for i in range(1, 4):
+
+    random_data = tf.random.normal((n, n, 3))
+    input_data = tf.convert_to_tensor(random_data)
+    print("Size = ", n, "x", n)
+
+    n = n*4
+     
     with tf.device('/CPU:0'):
-        output_tensor = rgb2gray(input_data)
-        if(len(sys.argv) < 2):
-            output_image = Image.fromarray(output_tensor, "L")
-            output_image.save("gray_cpu.jpg")
+        cpu_time = timeit(lambda: rgb2gray(input_data))
 
-def run_on_gpu():
     with tf.device('/GPU:0'):
-        output_tensor = rgb2gray(input_data)
-        if(len(sys.argv) < 2):
-            output_image = Image.fromarray(output_tensor, "L")
-            output_image.save("gray_gpu.jpg")
+        gpu_time = timeit(lambda: rgb2gray(input_data))
 
 
-cpu_time = timeit(run_on_cpu)
-gpu_time = timeit(run_on_gpu)
- 
-# Print the CPU and GPU time
-print("CPU time: ", cpu_time, " seconds")
-print("GPU time: ", gpu_time," seconds")
+    print("CPU time: ", cpu_time, " seconds")
+    print("GPU time: ", gpu_time," seconds")
+    speedup = cpu_time / gpu_time
+    print("Speedup: ", speedup)
 
-# Calculate the speedup
-speedup = cpu_time / gpu_time
-print("Speedup: ", speedup)
