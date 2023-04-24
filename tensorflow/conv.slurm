@@ -5,9 +5,6 @@
 #SBATCH --gres=gpu:1                #for requesting a GPU (p100 has x8 in one node, a100 only has 1gpu)
 #SBATCH --output=/home/%u/ceg7370/conv/%x-%u-%j.out    #Send output to ~/
 
-srun singularity exec --nv /home/containers/tf.sif python ./conv.py 512
-srun singularity exec --nv /home/containers/tf.sif python ./conv.py 2048
-srun singularity exec --nv /home/containers/tf.sif python ./conv.py 8192
-
+srun singularity exec --nv /home/containers/tf2.sif python ./conv.py 
 
 
