@@ -1,58 +1,36 @@
 import tensorflow as tf
-import numpy as np
-import time
+import tensorflow_addons as tfa
+from PIL import Image
+from timeit import timeit
 
-# Define the Gaussian kernel
-def gaussian_kernel(size, sigma):
-    x = tf.range(-size // 2 + 1, size // 2 + 1, dtype=tf.float32)
-    y = tf.range(-size // 2 + 1, size // 2 + 1, dtype=tf.float32)
-    x, y = tf.meshgrid(x, y)
-    kernel = tf.exp(-(x**2 + y**2) / (2 * sigma**2))
-    kernel /= tf.reduce_sum(kernel)
-    kernel = tf.reshape(kernel, [size, size, 1, 1]) # reshape the kernel tensor
-    return kernel
-
-# Define the Gaussian filter function
-def gaussian_filter(image, kernel):
-    image = tf.expand_dims(image, axis=0)
-    image = tf.expand_dims(image, axis=-1)
-    filtered_image = tf.nn.conv2d(image, kernel, strides=1, padding='SAME')
-    filtered_image = tf.squeeze(filtered_image)
+def gaussianFilter(image):
+    filtered_image = tfa.image.gaussian_filter2d(image, filter_shape=(15, 15), sigma=15)
+    filtered_image = Image.fromarray(tf.cast(filtered_image, tf.uint8).numpy())
     return filtered_image
 
-# Set the image size
-image_size = 512
+#Apply on Actual Image
+image = Image.open('image.jpg')
+image = tf.convert_to_tensor(image)
+filtered_image = gaussianFilter(image)
+filtered_image.save('filtered_image.jpg')
 
-# Generate a random image of the specified size
-image = np.random.rand(image_size, image_size).astype(np.float32)
 
-# Define the Gaussian kernel parameters
-kernel_size = 5
-sigma = 1
+#Apply on Different Size
+n=512
 
-# Create the Gaussian kernel
-kernel = gaussian_kernel(kernel_size, sigma)
+for i in range(1, 4):
 
-# Apply the Gaussian filter to the input image
-start_time_cpu = time.time()
-filtered_image_cpu = gaussian_filter(image, kernel)
-end_time_cpu = time.time()
+    matrix = tf.random.normal((n,n))
+    print("Size: ", n, 'X', n)
 
-# Calculate CPU execution time
-execution_time_cpu = end_time_cpu - start_time_cpu
+    n = n*4
+    with tf.device('/CPU:0'):
+        cpu_time = timeit(lambda: gaussianFilter(matrix))
 
-# Print CPU execution time
-print("CPU execution time: {} seconds".format(execution_time_cpu))
+    with tf.device('/GPU:0'):
+        gpu_time = timeit(lambda: gaussianFilter(matrix))
 
-# Apply the Gaussian filter to the input image using the GPU
-with tf.device('/GPU:0'):
-    start_time_gpu = time.time()
-    filtered_image_gpu = gaussian_filter(image, kernel)
-    end_time_gpu = time.time()
-
-# Calculate GPU execution time
-execution_time_gpu = end_time_gpu - start_time_gpu
-
-# Print GPU execution time and speedup
-print("GPU execution time: {} seconds".format(execution_time_gpu))
-print("Speedup: {}".format(execution_time_cpu / execution_time_gpu))
+    print("CPU time: ", cpu_time, " seconds")
+    print("GPU time: ", gpu_time," seconds")
+    speedup = cpu_time / gpu_time
+    print("Speedup: ", speedup)
