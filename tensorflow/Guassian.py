@@ -9,10 +9,10 @@ def gaussianFilter(image):
     return filtered_image
 
 #Apply on Actual Image
-image = Image.open('image.jpg')
+image = Image.open('/home/w374nxs/data/s-l1600.jpg')
 image = tf.convert_to_tensor(image)
 filtered_image = gaussianFilter(image)
-filtered_image.save('filtered_image.jpg')
+filtered_image.save('/home/w374nxs/data/Guassfiltered_image.jpgg')
 
 
 #Apply on Different Size
